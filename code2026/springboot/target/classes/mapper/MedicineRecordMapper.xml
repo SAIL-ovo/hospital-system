@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.MedicalRecordMapper">
+
+    <insert id="insert" parameterType="com.example.entity.MedicalRecord" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO medical_record (
+            appointment_id, patient_id, doctor_id, patient_name, doctor_name,
+            department, visit_date, chief_complaint, history_of_present_illness,
+            past_history, physical_examination, diagnosis, treatment_plan,
+            prescription, created_time, total_price, paid
+        ) VALUES (
+                     #{appointmentId}, #{patientId}, #{doctorId}, #{patientName}, #{doctorName},
+                     #{department}, #{visitDate}, #{chiefComplaint}, #{historyOfPresentIllness},
+                     #{pastHistory}, #{physicalExamination}, #{diagnosis}, #{treatmentPlan},
+                     #{prescription}, NOW(), #{totalPrice}, #{paid}
+                 )
+    </insert>
+
+    <update id="update" parameterType="com.example.entity.MedicalRecord">
+        UPDATE medical_record
+        SET
+        chief_complaint = #{chiefComplaint},
+        history_of_present_illness = #{historyOfPresentIllness},
+        past_history = #{pastHistory},
+        physical_examination = #{physicalExamination},
+        diagnosis = #{diagnosis},
+        treatment_plan = #{treatmentPlan},
+        prescription = #{prescription},
+        total_price = #{totalPrice},
+        paid = #{paid}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateById" parameterType="com.example.entity.MedicalRecord">
+        UPDATE medical_record
+        <set>
+            <if test="totalPrice != null">total_price = #{totalPrice},</if>
+            <if test="paid != null">paid = #{paid},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM medical_record WHERE id = #{id}
+    </delete>
+
+    <select id="selectById" resultType="com.example.entity.MedicalRecord">
+        SELECT * FROM medical_record WHERE id = #{id}
+    </select>
+
+    <select id="selectByAppointmentId" resultType="com.example.entity.MedicalRecord">
+        SELECT * FROM medical_record WHERE appointment_id = #{appointmentId}
+    </select>
+
+    <select id="selectByDoctorId" resultType="com.example.entity.MedicalRecord">
+        SELECT * FROM medical_record WHERE doctor_id = #{doctorId} ORDER BY created_time DESC
+    </select>
+
+    <select id="selectByUserId" resultType="com.example.entity.MedicalRecord">
+        SELECT * FROM medical_record
+        WHERE patient_id = #{userId}
+        ORDER BY visit_date DESC, created_time DESC  <!-- 优先按就诊日期倒序 -->
+    </select>
+
+    <select id="countByDoctorAndDate" resultType="int">
+        SELECT COUNT(*) FROM medical_record
+        WHERE doctor_id = #{doctorId}
+          AND visit_date = #{date}
+    </select>
+
+
+</mapper>

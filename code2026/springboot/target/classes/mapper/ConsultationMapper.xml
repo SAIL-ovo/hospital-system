@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.ConsultationMapper">
+    <resultMap id="BaseResultMap" type="com.example.entity.Consultation">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="doctor_id" property="doctorId"/>
+        <result column="content" property="content"/>
+        <result column="img_urls" property="imgUrls"/>
+        <result column="reply_content" property="replyContent"/>
+        <result column="create_time" property="createTime"/>
+        <result column="reply_time" property="replyTime"/>
+        <result column="status" property="status"/>
+    </resultMap>
+
+    <!-- 新增问诊 -->
+    <insert id="insert" parameterType="com.example.entity.Consultation">
+        insert into consultation (user_id, doctor_id, content, img_urls, status)
+        values (#{userId}, #{doctorId}, #{content}, #{imgUrls}, #{status})
+    </insert>
+
+    <!-- 用户查询自身问诊 -->
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        select * from consultation
+        where user_id = #{userId}
+        <if test="status != null">and status = #{status}</if>
+        order by create_time desc
+    </select>
+
+    <!-- 医生查询自身问诊 -->
+    <select id="selectByDoctorId" resultMap="BaseResultMap">
+        select * from consultation
+        where doctor_id = #{doctorId}
+        <if test="status != null">and status = #{status}</if>
+        order by create_time desc
+    </select>
+
+    <!-- 管理员查询所有问诊 -->
+    <select id="selectAll" resultMap="BaseResultMap">
+        select * from consultation
+        <where>
+            <if test="userId != null">and user_id = #{userId}</if>
+            <if test="doctorId != null">and doctor_id = #{doctorId}</if>
+            <if test="status != null">and status = #{status}</if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <!-- 根据ID查详情 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        select * from consultation where id = #{id}
+    </select>
+
+    <!-- 医生回复问诊 -->
+    <update id="updateReply">
+        update consultation
+        set reply_content = #{replyContent},
+            reply_time = #{replyTime},
+            status = #{status}
+        where id = #{id}
+    </update>
+
+    <!-- 医生统计待回复数量 -->
+    <select id="countByCondition" resultType="int">
+        select count(*) from consultation
+        where doctor_id = #{doctorId}
+        <if test="status != null">and status = #{status}</if>
+    </select>
+</mapper>

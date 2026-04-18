@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 对应Mapper接口的全类名 -->
+<mapper namespace="com.example.mapper.DoctorMapper">
+
+    <!-- 通用结果集映射 -->
+    <resultMap id="DoctorResultMap" type="com.example.entity.Doctor">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="password" column="password"/>
+        <result property="department" column="department"/>
+        <result property="title" column="title"/>
+        <result property="avatar" column="avatar"/>
+        <result property="intro" column="intro"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <!-- 新增医生 -->
+    <insert id="insertDoctor" parameterType="com.example.entity.Doctor">
+        insert into doctor
+            (name, password, department, title, avatar, intro, status, create_time)
+        values
+            (#{name}, #{password}, #{department}, #{title}, #{avatar}, #{intro}, #{status}, NOW())
+    </insert>
+
+    <!-- 根据ID删除医生 -->
+    <delete id="deleteDoctorById" parameterType="Integer">
+        delete from doctor where id = #{id}
+    </delete>
+
+    <!-- 修改医生信息 -->
+    <update id="updateDoctor" parameterType="com.example.entity.Doctor">
+        update doctor
+        <set>
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="department != null and department != ''">department = #{department},</if>
+            <if test="title != null and title != ''">title = #{title},</if>
+            <if test="avatar != null and avatar != ''">avatar = #{avatar},</if>
+            <if test="intro != null and intro != ''">intro = #{intro},</if>
+            <if test="status != null">status = #{status},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 根据ID查询医生 -->
+    <select id="selectDoctorById" parameterType="Integer" resultMap="DoctorResultMap">
+        select * from doctor where id = #{id}
+    </select>
+
+    <!-- 查询医生列表（支持条件筛选） -->
+    <select id="selectDoctorList" parameterType="com.example.entity.Doctor" resultMap="DoctorResultMap">
+        select * from doctor
+        <where>
+            <if test="name != null and name != ''">and name like concat('%', #{name}, '%')</if>
+            <if test="department != null and department != ''">and department = #{department}</if>
+            <if test="status != null">and status = #{status}</if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <!-- 医生登录（姓名+密码） -->
+    <select id="login" resultMap="DoctorResultMap">
+        select * from doctor where name = #{param1} and password = #{param2} and status = 1
+    </select>
+
+    <!--分页查询医生 -->
+    <select id="selectPage" resultMap="DoctorResultMap">
+        SELECT * FROM doctor
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT('%', #{name}, '%')
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 医生登录查询 -->
+    <select id="loginByUsername" resultType="com.example.entity.Doctor">
+        SELECT id, username, name, password, role, department
+        FROM doctor
+        WHERE username = #{username}
+        AND password = #{password}
+        AND status = 1  <!-- 仅在职医生可登录 -->
+    </select>
+
+    <!--  -->
+    <select id="loginByUsernameAndPassword" resultType="com.example.entity.Doctor">
+        SELECT id, username, password, name, role, avatar  <!-- 新增 avatar 字段 -->
+        FROM doctor
+        WHERE username = #{username} AND password = #{password}
+    </select>
+
+    <!-- 通过 username 查询医生 -->
+    <select id="selectByUsername" resultType="com.example.entity.Doctor">
+        SELECT * FROM doctor WHERE username = #{username}
+    </select>
+</mapper>

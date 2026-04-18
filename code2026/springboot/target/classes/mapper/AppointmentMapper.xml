@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.AppointmentMapper">
+
+    <select id="selectAll" resultType="com.example.entity.Appointment">
+        select a.*, u.name as patientName, d.name as doctorName
+        from appointment a
+        left join user u on a.user_id = u.id
+        left join doctor d on a.doctor_id = d.id
+        <where>
+            <if test="doctorId != null">
+                and a.doctor_id = #{doctorId}
+            </if>
+            <if test="patientName != null and patientName != ''">
+                and u.name like concat('%', #{patientName}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                and a.status = #{status}
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+
+    <select id="selectById" resultType="com.example.entity.Appointment">
+        select * from `appointment` where id = #{id}
+    </select>
+
+    <delete id="deleteById">
+        delete from `appointment` where id = #{id}
+    </delete>
+
+    <insert id="insert" parameterType="com.example.entity.Appointment" useGeneratedKeys="true" keyProperty="id">
+        insert into `appointment` (user_id, department_id, doctor_id, date, status, time)
+        values (#{userId}, #{departmentId}, #{doctorId}, #{date}, #{status}, #{time})
+    </insert>
+
+    <update id="updateById" parameterType="com.example.entity.Appointment">
+        update `appointment`
+        <set>
+            <if test="userId != null">
+                user_id = #{userId},
+            </if>
+            <if test="departmentId != null">
+                department_id = #{departmentId},
+            </if>
+            <if test="doctorId != null">
+                doctor_id = #{doctorId},
+            </if>
+            <if test="date != null">
+                date = #{date},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--查询医生预约 -->
+    <select id="selectTodayAppointment" resultType="com.example.entity.Appointment">
+        select a.*, u.id as userId, u.name as patientName
+        from `appointment` a
+        left join `user` u on a.user_id = u.id
+        where a.doctor_id = #{doctorId}
+        and a.status = '已确认'  <!-- 只保留已确认，去掉今日日期限制 -->
+        order by a.time asc
+    </select>
+
+    <!--更新预约状态 -->
+    <update id="updateStatus">
+        update `appointment`
+        set status = #{status}
+        where id = #{id}
+    </update>
+
+    <select id="countByDate" resultType="int">
+        SELECT COUNT(*) FROM appointment
+        WHERE date = #{date}
+    </select>
+
+</mapper>
